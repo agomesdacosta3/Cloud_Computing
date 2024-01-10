@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Customer</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css">
+</head>
+<body>
+    <h1>Add a Customer</h1>
+    <div class="form-container">
+        <form method="post" action="javascript:void(0);">
+            <label for="customerid" class="form-label">Customer ID:</label>
+            <input type="text" id="customerid" name="customerid" class="form-input" required />
+
+            <label for="companyname" class="form-label">Company Name:</label>
+            <input type="text" id="companyname" name="companyname" class="form-input" required />
+
+            <label for="contactname" class="form-label">Contact Name:</label>
+            <input type="text" id="contactname" name="contactname" class="form-input" required />
+
+            <button type="submit" onclick="addCustomer()" class="form-button">Add Customer</button>
+        </form>
+    </div>
+
+    <div id="add_customer_result" class="center-card-result"></div>
+</body>
+</html>
+
+
+<script>
+  function addCustomer() {
+  var resultContainer = document.getElementById("add_customer_result");
+  var customerid = document.getElementById("customerid").value;
+  var companyname = document.getElementById("companyname").value;
+  var contactname = document.getElementById("contactname").value;
+
+  fetch("/add_customer_db", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `customerid=${customerid}&companyname=${companyname}&contactname=${contactname}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.message === "Customer added successfully.") {
+        // Crée une carte pour afficher les informations du client
+        var customerCardHTML = `
+          <div class="card">
+            <h2>${data.message}</h2>
+            <h2>ID : ${customerid}</h2>
+            <p>Company : ${companyname}</p>
+            <p>Contact : ${contactname}</p>
+          </div>
+        `;
+        resultContainer.innerHTML = customerCardHTML;
+      } else {
+        // Affiche le message d'erreur
+        var addCustomerMessageHTML = `<p>${data.message}</p>`;
+        resultContainer.innerHTML = addCustomerMessageHTML;
+      }
+    });
+}
+</script>
