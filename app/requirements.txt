@@ -6,3 +6,4 @@ python-multipart
 sqlalchemy==1.4.23
 psycopg2==2.9.1
 requests
+elasticsearch

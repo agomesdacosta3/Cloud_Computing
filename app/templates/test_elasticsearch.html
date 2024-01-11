@@ -12,12 +12,24 @@
     {% if elasticsearch_response %}
         <div class="response-container">
             <h2>Response from Elasticsearch:</h2>
-            <pre>{{ elasticsearch_response }}</pre>
+            <pre>{{ elasticsearch_response | safe }}</pre>
         </div>
     {% elif error %}
         <div class="error-container">
             <h2>Error:</h2>
             <p>{{ error }}</p>
+        </div>
+    {% elif result_message %}
+        <div class="result-container">
+            <h2>Result:</h2>
+            <p>{{ result_message }}</p>
+        </div>
+    {% elif es_data_1 or es_data_2 or es_data_3 %}
+        <div class="data-container">
+            <h2>Data from Elasticsearch:</h2>
+            <p>Document 1: {{ es_data_1 | safe }}</p>
+            <p>Document 2: {{ es_data_2 | safe }}</p>
+            <p>Document 3: {{ es_data_3 | safe }}</p>
         </div>
     {% endif %}
 </body>

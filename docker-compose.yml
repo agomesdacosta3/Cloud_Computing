@@ -52,8 +52,8 @@ services:
     container_name: nginx
     image: nginx:latest
     ports:
-      - "80:80"
       - "443:443"
+      - "80:80" 
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./certs:/etc/ssl/certs
@@ -81,25 +81,17 @@ services:
   elastic:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     container_name: elastic
+    hostname: elastic
+    restart: always
     environment:
-      - node.name=elastic1
-      - node.roles=master
-      - cluster.name=es-docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "cluster.initial_master_nodes=elastic1"
-      # - "discovery.seed_hosts=es02,es03"
-      # - "cluster.initial_master_nodes=es01,es02,es03"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data01:/usr/share/elasticsearch/data
+      - "discovery.type=single-node"
     ports:
       - 9200:9200
     networks:
       - elnet
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+
 
   kibana:
     container_name: kibana
