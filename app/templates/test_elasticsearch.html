@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Elasticsearch Test</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css">
+</head>
+<body>
+    <h1>Elasticsearch Test</h1>
+    <div class="button-container">
+        <button class="custom-button" onclick="location.href='/test_elasticsearch'">Test Elasticsearch</button>
+    </div>
+    {% if elasticsearch_response %}
+        <div class="response-container">
+            <h2>Response from Elasticsearch:</h2>
+            <pre>{{ elasticsearch_response }}</pre>
+        </div>
+    {% elif error %}
+        <div class="error-container">
+            <h2>Error:</h2>
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+</body>
+</html>

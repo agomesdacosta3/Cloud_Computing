@@ -1,123 +1,105 @@
-# version: '3'
+version: '3'
 
-# services:
-#   db:
-#     container_name: db
-#     build:
-#       context: ./database
-#       dockerfile: Dockerfile
-#     container_name: db
-#     volumes:
-#       - postgresql_data:/var/lib/postgresql/data
-#     networks:
-#       - db_network
-#     ports:
-#       - 5432:5432
-
-#   pgadmin:
-#     container_name: pgadmin
-#     image: dpage/pgadmin4
-#     environment:
-#       PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
-#       PGADMIN_DEFAULT_PASSWORD: postgres
-#       PGADMIN_LISTEN_PORT: 5050
-#       PGADMIN_CONFIG_SERVER_MODE: 'False'
-#     volumes:
-#       - postgresql_bin:/usr/lib/postgresql
-#       - pgadmin_root_prefs:/root/.pgadmin
-#       - pgadmin_working_dir:/var/lib/pgadmin
-#       - ./files:/files
-#     ports:
-#       - 5050:5050
-#     networks:
-#       - db_network
-
-#   app:
-#     container_name: app
-#     build:
-#       context: ./app
-#       dockerfile: Dockerfile
-#     environment:
-#       DB_HOST: db
-#     depends_on:
-#       - db
-#     ports:
-#       - "8000:8000"
-#     networks:
-#       - db_network
-#       - app_network
-
-#   nginx:
-#     container_name: nginx
-#     image: nginx:latest
-#     ports:
-#       - "80:80"
-#       - "443:443"
-#     volumes:
-#       - ./nginx.conf:/etc/nginx/nginx.conf
-#       - ./certs:/etc/ssl/certs
-#     networks:
-#       - app_network
-#     depends_on:
-#       - app
-#     restart: always
-
-#   test-runner:
-#     container_name: test-runner
-#     build:
-#       context: ./scripts
-#       dockerfile: Dockerfile
-#     depends_on:
-#       - db
-#       - app
-#     networks:
-#       - db_network
-#       - app_network
-#     volumes:
-#       - /var/run/docker.sock:/var/run/docker.sock
-
-# networks:
-#   db_network:
-#     driver: bridge
-#   app_network:
-#     driver: bridge
-
-
-# volumes:
-#   pgadmin_root_prefs:
-#     driver: local
-#   pgadmin_working_dir:
-#     driver: local
-#   postgresql_data:
-#     driver: local
-#   postgresql_bin:
-#     driver: local
-
-version: '2.2'
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
-    container_name: elasticsearch
-    restart: always
+  # db:
+  #   container_name: db
+  #   build:
+  #     context: ./database
+  #     dockerfile: Dockerfile
+  #   container_name: db
+  #   volumes:
+  #     - postgresql_data:/var/lib/postgresql/data
+  #   networks:
+  #     - db_network
+  #   ports:
+  #     - 5432:5432
+
+  # pgadmin:
+  #   container_name: pgadmin
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+  #     PGADMIN_DEFAULT_PASSWORD: postgres
+  #     PGADMIN_LISTEN_PORT: 5050
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   volumes:
+  #     - postgresql_bin:/usr/lib/postgresql
+  #     - pgadmin_root_prefs:/root/.pgadmin
+  #     - pgadmin_working_dir:/var/lib/pgadmin
+  #     - ./files:/files
+  #   ports:
+  #     - 5050:5050
+  #   networks:
+  #     - db_network
+
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
     environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
+      DB_HOST: db
+    depends_on:
+      - elastic
+    ports:
+      - "8000:8000"
+    networks:
+      # - db_network
+      - elnet
+      - app_network
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certs:/etc/ssl/certs
+    networks:
+      - app_network
+      - elnet
+    depends_on:
+      - app
+    restart: always
+
+  # test-runner:
+  #   container_name: test-runner
+  #   build:
+  #     context: ./scripts
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - db
+  #     - app
+  #   networks:
+  #     - db_network
+  #     - app_network
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    container_name: elastic
+    environment:
+      - node.name=elastic1
+      - node.roles=master
+      - cluster.name=es-docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "cluster.initial_master_nodes=elastic1"
+      # - "discovery.seed_hosts=es02,es03"
+      # - "cluster.initial_master_nodes=es01,es02,es03"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
     volumes:
-      - ./elas1:/usr/share/elasticsearch/data
+      - data01:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-      - 9300:9300
     networks:
-      - esnet
+      - elnet
 
   kibana:
     container_name: kibana
@@ -126,10 +108,26 @@ services:
     ports:
       - 5601:5601
     depends_on:
-      - elasticsearch
+      - elastic
     networks:
-      - esnet
+      - elnet
 
 networks:
-  esnet:
+  # db_network:
+  #   driver: bridge
+  app_network:
     driver: bridge
+  elnet:
+    driver: bridge
+
+volumes:
+  # pgadmin_root_prefs:
+  #   driver: local
+  # pgadmin_working_dir:
+  #   driver: local
+  # postgresql_data:
+  #   driver: local
+  # postgresql_bin:
+  #   driver: local
+  data01:
+    driver: local

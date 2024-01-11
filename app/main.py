@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+import requests
+
 app = FastAPI()
 engine = create_engine('postgresql://postgres:postgres@db/northwind')
 Session = sessionmaker(bind=engine)
@@ -14,6 +16,17 @@ templates = Jinja2Templates(directory="templates")
 
 # Utilisez la fonction app.mount() pour servir les fichiers statiques depuis le répertoire "styles"
 app.mount("/styles", StaticFiles(directory="styles"), name="styles")
+
+# New endpoint to test Elasticsearch container
+@app.get('/test_elasticsearch')
+async def test_elasticsearch(request: Request):
+    # Make a request to Elasticsearch container
+    try:
+        es_response = requests.get('http://127.0.0.1:9200')
+        es_content = es_response.content.decode('utf-8')
+        return templates.TemplateResponse("test_elasticsearch.html", {"request": request, "elasticsearch_response": es_content})
+    except requests.RequestException as e:
+        return templates.TemplateResponse("test_elasticsearch.html", {"request": request, "error": f"Error connecting to Elasticsearch: {str(e)}"})
 
 @app.get('/')
 async def read_root(request: Request):
