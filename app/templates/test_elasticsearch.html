@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Elasticsearch Test</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css">
+</head>
+<body>
+    <h1>Elasticsearch Test</h1>
+    <div class="button-container">
+        <button class="custom-button" onclick="location.href='/test_elasticsearch'">Test Elasticsearch</button>
+    </div>
+    {% if index_exists %}
+        <div class="response-container">
+            <h2>Index "omdb" exists in Elasticsearch.</h2>
+        </div>
+    {% else %}
+        <div class="error-container">
+            <h2>Error:</h2>
+            <p>Index "omdb" does not exist in Elasticsearch. Please check your Elasticsearch setup.</p>
+        </div>
+    {% endif %}
+</body>
+</html>
