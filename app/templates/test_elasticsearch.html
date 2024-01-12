@@ -9,27 +9,14 @@
     <div class="button-container">
         <button class="custom-button" onclick="location.href='/test_elasticsearch'">Test Elasticsearch</button>
     </div>
-    {% if elasticsearch_response %}
+    {% if index_exists %}
         <div class="response-container">
-            <h2>Response from Elasticsearch:</h2>
-            <pre>{{ elasticsearch_response | safe }}</pre>
+            <h2>Index "omdb" exists in Elasticsearch.</h2>
         </div>
-    {% elif error %}
+    {% else %}
         <div class="error-container">
             <h2>Error:</h2>
-            <p>{{ error }}</p>
-        </div>
-    {% elif result_message %}
-        <div class="result-container">
-            <h2>Result:</h2>
-            <p>{{ result_message }}</p>
-        </div>
-    {% elif es_data_1 or es_data_2 or es_data_3 %}
-        <div class="data-container">
-            <h2>Data from Elasticsearch:</h2>
-            <p>Document 1: {{ es_data_1 | safe }}</p>
-            <p>Document 2: {{ es_data_2 | safe }}</p>
-            <p>Document 3: {{ es_data_3 | safe }}</p>
+            <p>Index "omdb" does not exist in Elasticsearch. Please check your Elasticsearch setup.</p>
         </div>
     {% endif %}
 </body>

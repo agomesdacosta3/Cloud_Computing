@@ -39,6 +39,7 @@ services:
       dockerfile: Dockerfile
     environment:
       DB_HOST: db
+      ELASTICSEARCH_URL: http://elastic:9200
     depends_on:
       - elastic
     ports:
@@ -92,6 +93,16 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
 
+  data-init:
+    image: curlimages/curl:latest
+    container_name: data-init
+    networks:
+      - elnet
+    volumes:
+      - ./files/omdb.json:/usr/share/omdb.json 
+    command: ["sh", "-c", "sleep 10 && curl -X POST http://elastic:9200/omdb/_bulk -H 'Content-Type: application/json' --data-binary @/usr/share/omdb.json && sleep 5 && tail -f /dev/null"]
+    depends_on:
+      - elastic
 
   kibana:
     container_name: kibana
